@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses - Physics Wallah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+        /* Custom styles */
+        .course-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .enroll-button {
+            background: linear-gradient(to right, #6c5ce7, #a8a4e6);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .enroll-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(108,92,231,0.4);
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            right: 0;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c5ce7;
+        }
+
+        .close-button:hover {
+            transform: rotate(90deg);
+        }
+        .nav-item {
+            position: relative;
+            display: inline-block;
+            color: #fff;
+            padding: 0.6em 1em;
+            margin: 0 0.5em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            text-shadow: 0 1px 1px hsl(205deg 30% 10% / 0.2);
+            overflow: hidden;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            color: black;
+            text-shadow: none;
+        }
+
+        .nav-item::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 8px;
+            background: white;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-item.active::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Navigation Bar (Same as gdc.html) -->
+    <nav class="p-4 fixed w-full z-50 bg-black bg-opacity-90">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-white">GDG</h1>
+            <div class="hidden md:flex space-x-6">
+                <a href="./index.html" class="nav-item" onclick="activateNavItem(this, event)">Home</a>
+                <a href="#" class="nav-item" onclick="activateNavItem(this, event)">About</a>
+                <a href="./course.html" class="nav-item" onclick="activateNavItem(this, event)">Courses</a>
+                <a href="./dashboard.html" class="nav-item" onclick="activateNavItem(this, event)">Dashboard</a>
+                <a href="#" class="nav-item" onclick="activateNavItem(this, event)">Contact</a>
+            </div>
+            <button class="bg-purple-500 text-white px-6 py-2 rounded-md hover:bg-purple-400 transition duration-300">
+                Login/Register
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content pt-20 pl-4 pr-4 pb-4 w-full">
+        <!-- Hero Section -->
+        <div class="text-black text-center py-16">
+            <h1 class="text-5xl font-bold mb-6">Our Courses</h1>
+            <p class="text-xl mb-8">Explore our comprehensive selection of courses designed to help you master your studies.</p>
+        </div>
+
+        <!-- Courses Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
+            <!-- Course Card 1 -->
+            <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-purple-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-graduation-cap text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">IIT JEE</h3>
+                </div>
+                <p class="text-gray-200">Master the fundamentals of physics with our comprehensive course.</p>
+                <button onclick="openEnrollmentModal('physics')" class="enroll-button w-full mt-4">Enroll Now</button>
+            </div>
+
+            <!-- Course Card 2 -->
+            <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-purple-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-calculator text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">NEET</h3>
+                </div>
+                <p class="text-gray-200">Enhance your mathematical skills with our detailed course curriculum.</p>
+                <button onclick="openEnrollmentModal('math')" class="enroll-button w-full mt-4">Enroll Now</button>
+            </div>
+
+            <!-- Course Card 3 -->
+            <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-purple-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-beaker text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">GOVT JOBS</h3>
+                </div>
+                <p class="text-gray-200">Learn the basics of chemistry with our interactive lessons.</p>
+                <button onclick="openEnrollmentModal('chemistry')" class="enroll-button w-full mt-4">Enroll Now</button>
+            </div>
+        </div>
+
+        <!-- Registration Modal -->
+        <div class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="closeEnrollmentModal()">&times;</span>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Course Enrollment</h2>
+                <form id="enrollmentForm">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2" for="name">Name</label>
+                        <input type="text" id="name" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2" for="email">Email</label>
+                        <input type="email" id="email" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2" for="phone">Phone</label>
+                        <input type="tel" id="phone" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2" for="course">Selected Course</label>
+                        <select id="course" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+                            <option value="physics">IIT JEET</option>
+                            <option value="math">NEET</option>
+                            <option value="chemistry">GOVT JOBS</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="enroll-button w-full">Complete Enrollment</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Chat Icon (Same as gdc.html) -->
+    <div class="fixed bottom-4 right-4">
+        <div id="chatIcon" class="w-16 h-16 bg-gradient-to-r from-purple-600 to-purple-800 rounded-full flex items-center justify-center cursor-pointer shadow-lg animate-float border-2 border-purple-300 hover:border-purple-100 transition-all duration-300">
+            <div class="text-3xl">🤖</div>
+        </div>
+    </div>
+
+    <!-- Chat Container (Same as gdc.html) -->
+    <div id="chatContainer" class="hidden bg-gray-800 w-64 h-96 rounded-2xl shadow-xl backdrop-blur-sm mt-4 transition-all duration-300 overflow-hidden">
+        <div class="p-4 h-full flex flex-col">
+            <div class="bg-purple-800/30 rounded-lg p-3 mb-4 flex-1 overflow-y-auto">
+                <div class="flex items-start gap-2 mb-3">
+                    <p class="text-sm text-gray-200">How can I help you with your studies today?</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" placeholder="Ask a question..." 
+                       class="bg-purple-800/30 text-gray-200 rounded-lg px-3 py-2 text-sm flex-1 
+                              focus:outline-none focus:ring-2 focus:ring-purple-400">
+                <button class="bg-purple-500 text-white px-3 py-2 rounded-lg hover:bg-purple-400 
+                             transition duration-300 text-sm">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- New Section -->
+<div class="text-black text-center py-16">
+    <h1 class="text-5xl font-bold mb-6">Study Resources</h1>
+    <p class="text-xl mb-8">Explore our comprehensive collection of study materials to boost your preparation.</p>
+</div>
+
+<!-- Resources Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4 pb-16">
+    <!-- Resource Card 1 -->
+    <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
+        <div class="flex items-center gap-4 mb-4">
+            <div class="bg-purple-500 text-white p-3 rounded-lg">
+                <i class="fas fa-clipboard-check text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">Test Practices</h3>
+        </div>
+        <p class="text-gray-200">Practice with our extensive collection of test questions and mock exams.</p>
+        <button onclick="openEnrollmentModal('test-practices')" class="enroll-button w-full mt-4">Explore Now</button>
+    </div>
+
+    <!-- Resource Card 2 -->
+    <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
+        <div class="flex items-center gap-4 mb-4">
+            <div class="bg-purple-500 text-white p-3 rounded-lg">
+                <i class="fas fa-play-circle text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">Playlists</h3>
+        </div>
+        <p class="text-gray-200">Access curated video playlists covering all important topics and concepts.</p>
+        <button onclick="openEnrollmentModal('playlists')" class="enroll-button w-full mt-4">Explore Now</button>
+    </div>
+
+    <!-- Resource Card 3 -->
+    <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
+        <div class="flex items-center gap-4 mb-4">
+            <div class="bg-purple-500 text-white p-3 rounded-lg">
+                <i class="fas fa-file-alt text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">Test Papers</h3>
+        </div>
+        <p class="text-gray-200">Download previous years' test papers with detailed solutions.</p>
+        <button onclick="openEnrollmentModal('test-papers')" class="enroll-button w-full mt-4">Explore Now</button>
+    </div>
+
+    <!-- Resource Card 4 -->
+    <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
+        <div class="flex items-center gap-4 mb-4">
+            <div class="bg-purple-500 text-white p-3 rounded-lg">
+                <i class="fas fa-book text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">Books</h3>
+        </div>
+        <p class="text-gray-200">Find recommended preparation books and study materials.</p>
+        <button onclick="openEnrollmentModal('books')" class="enroll-button w-full mt-4">Explore Now</button>
+    </div>
+</div>
+
+
+    <script>
+        // Navigation Item Activation (Same as gdc.html)
+        function activateNavItem(element, event) {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+
+            // Create ripple effect
+            const ripple = document.createElement('span');
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+            ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
+            ripple.className = 'ripple';
+            element.appendChild(ripple);
+
+            setTimeout(() => {
+                element.removeChild(ripple);
+            }, 600);
+        }
+
+        // Chat Toggle (Same as gdc.html)
+        const chatIcon = document.getElementById('chatIcon');
+        const chatContainer = document.getElementById('chatContainer');
+        
+        chatIcon.addEventListener('click', () => {
+            chatContainer.classList.toggle('hidden');
+            chatIcon.classList.toggle('animate-float');
+        });
+
+        // Course Enrollment Modal
+        function openEnrollmentModal(course) {
+            document.querySelector('.modal').classList.add('active');
+            document.getElementById('course').value = course;
+        }
+
+        function closeEnrollmentModal() {
+            document.querySelector('.modal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.querySelector('.modal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeEnrollmentModal();
+            }
+        });
+
+        // Form submission
+        document.getElementById('enrollmentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Add your enrollment logic here
+            alert('Thank you for enrolling! We will contact you shortly.');
+            closeEnrollmentModal();
+        });
+    </script>
+</body>
+</html>
