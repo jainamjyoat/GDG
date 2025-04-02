@@ -3,47 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Physics Wallah</title>
+    <title>Animated Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="./New/output.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#7C3AED", 
+                        secondary: "#D8B4FE",
+                        dark: "#1F2937",
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #000;
-            overflow-y: scroll;
-            position: relative;
-        }
-        
-        #three-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        /* Transparent scrollbar for webkit-based browsers */
-        body::-webkit-scrollbar {
-            width: 8px;
-            background-color: transparent;
-        }
-
-        body::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-        }
-
-        body::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(255, 255, 255, 0.4);
-        }
-
         .nav-item {
             position: relative;
             display: inline-block;
@@ -169,42 +146,309 @@
             }
         }
 
-        /* Slide-In Animation for Main Content */
-        .main-content {
-            opacity: 0;
-            transform: translateY(45px);
-            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+        /* Streak Section Styles */
+        .streak-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            padding: 20px;
+            background-color: #f3f4f6;
+            border-radius: 8px;
         }
 
-        .main-content.visible {
+        .streak-box {
+            width: 40px;
+            height: 40px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #1f2937;
+            transition: background-color 0.3s ease;
+        }
+
+        .streak-box.active {
+            background-color: #7C3AED;
+            color: #fff;
+        }
+
+        /* Registration Indicators */
+        .indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #7C3AED;
+            color: #fff;
+            font-size: 12px;
+            line-height: 20px;
+            text-align: center;
+            margin-right: 5px;
+        }
+
+        /* Equal Height for Sections */
+        .equal-height {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+        }
+
+        .equal-height > div {
+            flex: 1;
+            margin: 0 10px;
+        }
+
+        /* Card Styles for Playlists and Courses */
+        .playlist-card {
+            display: flex;
+            flex-direction: column;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 15px;
+            width: 150px;
+        }
+
+        .playlist-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .playlist-thumbnail {
+            width: 100%;
+            height: 80px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .playlist-thumbnail::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+        }
+
+        .playlist-content {
+            padding: 10px;
+        }
+
+        .playlist-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .playlist-description {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Container for Cards */
+        .playlist-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Test Flashcard Styles */
+        .test-card {
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .test-description {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        /* Fixed Sidebar */
+        aside {
+            position: fixed;
+            top: 64px; /* Adjust based on the height of the navbar */
+            bottom: 0;
+            width: 16rem; /* Width of the sidebar */
+            overflow-y: auto;
+        }
+
+        /* Main Content Adjustment */
+        main {
+            margin-left: 16rem; /* Same width as the sidebar */
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgb(0,0,0); 
+            background-color: rgba(0,0,0,0.4); 
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; 
+            max-width: 500px;
+            border-radius: 8px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+            .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .login-container.active {
             opacity: 1;
+            visibility: visible;
+        }
+
+        .login-form {
+            background-color: #1a1a1a;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 300px;
+            transform: translateY(-20px);
+            transition: transform 0.5s ease;
+            position: relative;
+        }
+
+        .login-container.active .login-form {
             transform: translateY(0);
+        }
+
+        .login-form h2 {
+            color: #fff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+
+        .login-form button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #9333ea;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-form button:hover {
+            background-color: #7e22ce;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 3px;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: scale(1.2);
+        }
         }
     </style>
 </head>
-<body class="min-h-screen">
-    <!-- Three.js Canvas -->
-    <div id="three-background"></div>
-    
+<body class="bg-gray-100">
     <!-- Skeleton Screen -->
     <div id="skeletonScreen" class="skeleton-container">
         <div class="skeleton skeleton-header"></div>
         <div class="skeleton skeleton-nav"></div>
         <div class="skeleton skeleton-hero"></div>
-        <div class="skeleton skeleton-dropdown"></div>
+        <div class="skeleton-dropdown"></div>
         <div class="skeleton skeleton-content"></div>
     </div>
-    
-    <!-- Top Navigation Bar -->
-    <nav class="p-4 fixed w-full z-50 bg-black bg-opacity-90"> 
+
+    <!-- Navigation Bar (Same as gdc.html) -->
+    <nav class="p-4 fixed w-full z-50 bg-black bg-opacity-90">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-3xl font-bold text-white">GDG</h1>
             <div class="hidden md:flex space-x-6">
-                <a href="index.html" class="nav-item" onclick="activateNavItem(this, event)">Home</a>
+                <a href="./index.html" class="nav-item" onclick="activateNavItem(this, event)">Home</a>
                 <a href="#" class="nav-item" onclick="activateNavItem(this, event)">About</a>
                 <a href="./course.html" class="nav-item" onclick="activateNavItem(this, event)">Courses</a>
                 <a href="./dashboard.html" class="nav-item" onclick="activateNavItem(this, event)">Dashboard</a>
                 <a href="#" class="nav-item" onclick="activateNavItem(this, event)">Contact</a>
+                <a href="./chatbot/index.html" class="nav-item" onclick="activateNavItem(this, event)">ChatBot</a>
             </div>
             <button id="loginBtn" class="bg-purple-500 text-white px-6 py-2 rounded-md hover:bg-purple-400 transition duration-300">
                 Login/Register
@@ -212,105 +456,191 @@
         </div>
     </nav>
 
-    <!-- Main Content Area -->
-    <main class="main-content pt-20 pl-4 pr-4 pb-4 w-full">
-        <!-- Dashboard Content -->
-        <div class="text-white text-center py-16">
-            <h1 class="text-5xl font-bold mb-6">Welcome to the Dashboard</h1>
-            <p class="text-xl mb-8">Track your progress and manage your courses.</p>
-        </div>
-
-        <!-- Dashboard Sections -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Progress Section -->
-            <div class="bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
-                <h3 class="text-xl font-bold mb-4 text-white">Your Progress</h3>
-                <p class="text-gray-200">You have completed 70% of your current course.</p>
-                <div class="mt-4">
-                    <canvas id="progressChart" width="100" height="100"></canvas>
+    <div class="flex pt-16">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-dark text-white p-5">
+            <h2 class="text-xl font-bold mb-4">Dashboard</h2>
+            <nav>
+                <ul>
+                    <li class="mb-2 p-2 bg-primary rounded">Dashboard</li>
+                    <li class="mb-2 p-2 hover:bg-secondary rounded">
+                        <a href="./events.html" class="block">Event</a>
+                    </li>
+                    <li class="mb-2 p-2 hover:bg-secondary rounded">
+                        <a href="#" class="block" onclick="openSettings()">Settings</a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <div class="mt-6 equal-height">
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="text-lg font-bold mb-4">Student Statistics</h3>
+                    <canvas id="subjectProgressChart" width="400" height="200"></canvas>
+                </div>
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="text-lg font-bold mb-4">Registrations</h3>
+                    <canvas id="registrationChart" width="120" height="120"></canvas>
                 </div>
             </div>
-
-            <!-- Courses Section -->
-            <div class="bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
-                <h3 class="text-xl font-bold mb-4 text-white">Your Courses</h3>
-                <ul class="text-gray-200">
-                    <li>Course 1: 80% completed</li>
-                    <li>Course 2: 50% completed</li>
-                    <li>Course 3: 30% completed</li>
-                </ul>
+            <div class="mt-6 grid grid-cols-2 gap-4">
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="text-lg font-bold mb-4">Saved Playlist</h3>
+                    <div class="playlist-container">
+                        <div class="playlist-card">
+                            <div class="playlist-thumbnail" style="background-image: url('https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg');"></div>
+                            <div class="playlist-content">
+                                <div class="playlist-title">IIT JEE Physics</div>
+                                <div class="playlist-description">Comprehensive physics tutorials for IIT JEE preparation.</div>
+                            </div>
+                        </div>
+                        <div class="playlist-card">
+                            <div class="playlist-thumbnail" style="background-image: url('https://img.youtube.com/vi/rfscVS0vtbw/0.jpg');"></div>
+                            <div class="playlist-content">
+                                <div class="playlist-title">IIT JEE Chemistry</div>
+                                <div class="playlist-description">In-depth chemistry concepts for IIT JEE aspirants.</div>
+                            </div>
+                        </div>
+                        <div class="playlist-card">
+                            <div class="playlist-thumbnail" style="background-image: url('https://img.youtube.com/vi/8mAITcNt710/0.jpg');"></div>
+                            <div class="playlist-content">
+                                <div class="playlist-title">IIT JEE Mathematics</div>
+                                <div class="playlist-description">Advanced math techniques for IIT JEE success.</div>
+                            </div>
+                        </div>
+                        <div class="playlist-card">
+                            <div class="playlist-thumbnail" style="background-image: url('https://img.youtube.com/vi/PkZNo7MFNFg/0.jpg');"></div>
+                            <div class="playlist-content">
+                                <div class="playlist-title">NEET Biology</div>
+                                <div class="playlist-description">Detailed biology lectures for NEET candidates.</div>
+                            </div>
+                        </div>
+                        <div class="playlist-card">
+                            <div class="playlist-thumbnail" style="background-image: url('https://img.youtube.com/vi/pQN-pnXPaVg/0.jpg');"></div>
+                            <div class="playlist-content">
+                                <div class="playlist-title">NEET Chemistry</div>
+                                <div class="playlist-description">Essential chemistry topics for NEET preparation.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="text-lg font-bold mb-4">Saved Courses</h3>
+                    <div class="playlist-container">
+                        <div class="playlist-card">
+                            <div class="playlist-thumbnail" style="background-image: url('https://img.unacademy.com/course-thumbnail.jpg');"></div>
+                            <div class="playlist-content">
+                                <div class="playlist-title">Unacademy: Physics Mastery</div>
+                                <div class="playlist-description">Comprehensive physics course for competitive exams.</div>
+                            </div>
+                        </div>
+                        <div class="playlist-card">
+                            <div class="playlist-thumbnail" style="background-image: url('https://img.pw.live/course-thumbnail.jpg');"></div>
+                            <div class="playlist-content">
+                                <div class="playlist-title">PW: Chemistry Crash Course</div>
+                                <div class="playlist-description">Quick revision of key chemistry concepts.</div>
+                            </div>
+                        </div>
+                        <div class="playlist-card">
+                            <div class="playlist-thumbnail" style="background-image: url('https://img.vedantu.com/course-thumbnail.jpg');"></div>
+                            <div class="playlist-content">
+                                <div class="playlist-title">Vedantu: Math Excellence</div>
+                                <div class="playlist-description">Advanced math techniques for high school students.</div>
+                            </div>
+                        </div>
+                        <div class="playlist-card">
+                            <div class="playlist-thumbnail" style="background-image: url('https://img.otherplatform.com/course-thumbnail.jpg');"></div>
+                            <div class="playlist-content">
+                                <div class="playlist-title">Other: Biology Insights</div>
+                                <div class="playlist-description">In-depth biology course covering all major topics.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="text-lg font-bold mb-4">Saved Test Flashcards</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="test-card">
+                            <h4 class="test-title">IIT JEE Physics</h4>
+                            <p class="test-description">Platform: Unacademy</p>
+                            <p class="test-description">20 flashcards</p>
+                        </div>
+                        <div class="test-card">
+                            <h4 class="test-title">IIT JEE Chemistry</h4>
+                            <p class="test-description">Platform: PW</p>
+                            <p class="test-description">25 flashcards</p>
+                        </div>
+                        <div class="test-card">
+                            <h4 class="test-title">IIT JEE Mathematics</h4>
+                            <p class="test-description">Platform: Vedantu</p>
+                            <p class="test-description">30 flashcards</p>
+                        </div>
+                        <div class="test-card">
+                            <h4 class="test-title">NEET Biology</h4>
+                            <p class="test-description">Platform: Other</p>
+                            <p class="test-description">18 flashcards</p>
+                        </div>
+                        <div class="test-card">
+                            <h4 class="test-title">NEET Chemistry</h4>
+                            <p class="test-description">Platform: Unacademy</p>
+                            <p class="test-description">22 flashcards</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded shadow">
+                    <h3 class="text-lg font-bold mb-2">Streaks</h3>
+                    <div class="streak-container" id="streakGrid"></div>
+                </div>
+                
             </div>
+            <!-- <div class="mt-6 bg-white p-6 rounded shadow">
+                <h3 class="text-lg font-bold mb-4">Student Progress</h3>
+                <canvas id="progressChart" width="400" height="200"></canvas>
+            </div> -->
+        </main>
+    </div>
 
-            <!-- Study Hours Chart -->
-            <div class="bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
-                <h3 class="text-xl font-bold mb-4 text-white">Study Hours</h3>
-                <canvas id="studyHoursChart" width="400" height="200"></canvas>
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSettings()">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Settings</h2>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="theme">Theme</label>
+                <select id="theme" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option>Light</option>
+                    <option>Dark</option>
+                </select>
             </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="notifications">Notifications</label>
+                <input type="checkbox" id="notifications" class="mr-2 leading-tight">
+                <span class="text-sm">Enable Notifications</span>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="language">Language</label>
+                <select id="language" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option>English</option>
+                    <option>Hindi</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="username">Change Username</label>
+                <input type="text" id="username" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Enter new username">
+            </div>
+            <div class="mb-4">
+                <button class="bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition duration-300 w-full">Help and Support</button>
+            </div>
+            <div class="mb-4">
+                <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-400 transition duration-300 w-full">Log Out</button>
+            </div>
+            <button class="bg-primary text-white px-4 py-2 rounded hover:bg-secondary transition duration-300">Save Changes</button>
         </div>
-    </main>
+    </div>
 
     <script>
-        // Three.js setup
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setClearColor(0x000000, 0.9);
-        document.getElementById('three-background').appendChild(renderer.domElement);
-
-        // Create confetti particles
-        const particlesGeometry = new THREE.BufferGeometry();
-        const particlesCount = 1000; // Number of confetti particles
-        const posArray = new Float32Array(particlesCount * 3);
-        const colors = new Float32Array(particlesCount * 3);
-
-        for(let i = 0; i < particlesCount; i++) {
-            posArray[i * 3] = (Math.random() - 0.5) * 20;
-            posArray[i * 3 + 1] = (Math.random() - 0.5) * 20;
-            posArray[i * 3 + 2] = (Math.random() - 0.5) * 20;
-
-            colors[i * 3] = Math.random();
-            colors[i * 3 + 1] = Math.random();
-            colors[i * 3 + 2] = Math.random();
-        }
-
-        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-        // Create material for confetti
-        const particlesMaterial = new THREE.PointsMaterial({
-            size: 0.1,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.8
-        });
-
-        // Create mesh
-        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-        scene.add(particlesMesh);
-        
-        camera.position.z = 10;
-
-        // Animation loop
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            // Rotate particles
-            particlesMesh.rotation.x += 0.001;
-            particlesMesh.rotation.y += 0.001;
-            
-            renderer.render(scene, camera);
-        }
-
-        animate();
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
+        // Navigation Item Activation (Same as gdc.html)
         function activateNavItem(element, event) {
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(item => item.classList.remove('active'));
@@ -331,56 +661,132 @@
             }, 600);
         }
 
-        // Chart.js setup for Study Hours
-        const ctx = document.getElementById('studyHoursChart').getContext('2d');
-        const studyHoursChart = new Chart(ctx, {
+        // Initialize streak grid
+        const streakGrid = document.getElementById('streakGrid');
+        const streakDays = 30; // Number of days to display
+        const activeDays = 15; // Number of active streak days
+
+        for (let i = 1; i <= streakDays; i++) {
+            const box = document.createElement('div');
+            box.className = 'streak-box';
+            box.textContent = i;
+
+            if (i <= activeDays) {
+                box.classList.add('active');
+            }
+
+            streakGrid.appendChild(box);
+        }
+
+        // // Initialize Chart.js for Student Progress
+        // const ctx = document.getElementById('progressChart').getContext('2d');
+        // const progressChart = new Chart(ctx, {
+        //     type: 'pie',
+        //     data: {
+        //         labels: ['Completed', 'Ongoing', 'Pending'],
+        //         datasets: [{
+        //             data: [60, 30, 10],
+        //             backgroundColor: ['#7C3AED', '#D8B4FE', '#1F2937'],
+        //         }]
+        //     },
+        //     options: {
+        //         responsive: true,
+        //         plugins: {
+        //             legend: {
+        //                 position: 'top',
+        //             },
+        //             title: {
+        //                 display: true,
+        //                 text: 'Student Progress'
+        //             }
+        //         }
+        //     }
+        // });
+
+        // Initialize Chart.js for Subject-wise Progress
+        const subjectCtx = document.getElementById('subjectProgressChart').getContext('2d');
+        const subjectProgressChart = new Chart(subjectCtx, {
             type: 'bar',
             data: {
-                labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+                labels: ['Math', 'Science', 'History', 'Art', 'Physical Education'],
                 datasets: [{
-                    label: 'Study Hours',
-                    data: [2, 3, 4, 5, 3, 2, 4],
-                    backgroundColor: 'rgba(147, 51, 234, 0.5)',
-                    borderColor: 'rgba(147, 51, 234, 1)',
-                    borderWidth: 1
+                    label: 'Progress (%)',
+                    data: [80, 70, 60, 90, 50],
+                    backgroundColor: ['#7C3AED', '#D8B4FE', '#1F2937', '#4B5563', '#9CA3AF'],
                 }]
             },
             options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                    title: {
+                        display: true,
+                        text: 'Subject-wise Progress'
+                    }
+                },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        max: 100
                     }
                 }
             }
         });
 
-        // Chart.js setup for Progress
-        const progressCtx = document.getElementById('progressChart').getContext('2d');
-        const progressChart = new Chart(progressCtx, {
-            type: 'doughnut',
+        // Initialize Chart.js for Registrations with Percentage Labels
+        const registrationCtx = document.getElementById('registrationChart').getContext('2d');
+        const registrationChart = new Chart(registrationCtx, {
+            type: 'pie',
             data: {
-                labels: ['Completed', 'Remaining'],
+                labels: ['Courses Registered', 'Tests Appeared'],
                 datasets: [{
-                    data: [70, 30],
-                    backgroundColor: ['rgba(147, 51, 234, 0.5)', 'rgba(255, 255, 255, 0.2)'],
-                    borderColor: ['rgba(147, 51, 234, 1)', 'rgba(255, 255, 255, 0.2)'],
-                    borderWidth: 1
+                    data: [5, 3],
+                    backgroundColor: ['#7C3AED', '#D8B4FE'],
                 }]
             },
             options: {
-                cutout: '70%',
+                responsive: true,
                 plugins: {
                     legend: {
-                        display: false
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Registrations Overview'
+                    },
+                    datalabels: {
+                        formatter: (value, ctx) => {
+                            let sum = 0;
+                            let dataArr = ctx.chart.data.datasets[0].data;
+                            dataArr.map(data => {
+                                sum += data;
+                            });
+                            let percentage = (value * 100 / sum).toFixed(2) + "%";
+                            return percentage;
+                        },
+                        color: '#fff',
                     }
                 }
-            }
+            },
+            plugins: [ChartDataLabels]
         });
+
+        // Open Settings Modal
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'block';
+        }
+
+        // Close Settings Modal
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
 
         // Simulate loading completion
         window.addEventListener('load', () => {
             const skeletonScreen = document.getElementById('skeletonScreen');
-            const mainContent = document.querySelector('.main-content');
+            const mainContent = document.querySelector('main');
             setTimeout(() => {
                 skeletonScreen.style.display = 'none';
                 mainContent.classList.add('visible'); // Add class to trigger slide-in

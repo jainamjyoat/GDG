@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Video Chatbot</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Include Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #000;
+            overflow-y: scroll;
+            position: relative;
+        }
+        
+        #three-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .nav-item {
+            position: relative;
+            display: inline-block;
+            color: #fff;
+            padding: 0.6em 1em;
+            margin: 0 0.5em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            text-shadow: 0 1px 1px hsl(205deg 30% 10% / 0.2);
+            overflow: hidden;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            color: black;
+            text-shadow: none;
+        }
+
+        .nav-item::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 8px;
+            background: white;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-item.active::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Three.js Canvas -->
+    <div id="three-background"></div>
+    
+    <!-- Top Navigation Bar -->
+    <nav class="p-4  w-full z-50 bg-black bg-opacity-90"> 
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-white">GDG</h1>
+            <div class="hidden md:flex space-x-6">
+                <a href="../index.html" class="nav-item" onclick="activateNavItem(this, event)">Home</a>
+                <a href="#" class="nav-item" onclick="activateNavItem(this, event)">About</a>
+                <a href="../course.html" class="nav-item" onclick="activateNavItem(this, event)">Courses</a>
+                <a href="../dashboard.html" class="nav-item" onclick="activateNavItem(this, event)">Dashboard</a>
+                <a href="#" class="nav-item" onclick="activateNavItem(this, event)">Contact</a>
+                <a href="./index.html" class="nav-item" onclick="activateNavItem(this, event)">ChatBot</a>
+            </div>
+            <button id="loginBtn" class="bg-purple-500 text-white px-6 py-2 rounded-md hover:bg-purple-400 transition duration-300">
+                Login/Register
+            </button>
+        </div>
+    </nav>
+
+    <!-- Chatbot Interface -->
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md mt-32 mx-auto">
+        <h1 class="text-2xl font-bold mb-4">Educational Video Chatbot</h1>
+        <div id="chat-box" class="mb-4 h-64 overflow-y-auto border p-2 bg-gray-50 rounded-lg"></div>
+        <input type="text" id="user-input" class="w-full p-2 border rounded-lg" placeholder="Ask about a topic...">
+        <button id="send-btn" class="mt-2 w-full bg-blue-500 text-white p-2 rounded-lg">Send</button>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // JavaScript for activating nav items
+        function activateNavItem(element, event) {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        // Three.js setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0.9);
+        document.getElementById('three-background').appendChild(renderer.domElement);
+
+        // Create confetti particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 1000; // Number of confetti particles
+        const posArray = new Float32Array(particlesCount * 3);
+        const colors = new Float32Array(particlesCount * 3);
+
+        for(let i = 0; i < particlesCount; i++) {
+            posArray[i * 3] = (Math.random() - 0.5) * 20;
+            posArray[i * 3 + 1] = (Math.random() - 0.5) * 20;
+            posArray[i * 3 + 2] = (Math.random() - 0.5) * 20;
+
+            colors[i * 3] = Math.random();
+            colors[i * 3 + 1] = Math.random();
+            colors[i * 3 + 2] = Math.random();
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        // Create material for confetti
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.1,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        // Create mesh
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        
+        camera.position.z = 10;
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotate particles
+            particlesMesh.rotation.x += 0.001;
+            particlesMesh.rotation.y += 0.001;
+            
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
