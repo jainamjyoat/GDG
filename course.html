@@ -47,16 +47,19 @@
         .modal {
             position: fixed;
             top: 0;
-            right: -100%;
+            left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             z-index: 1000;
+            display: none;
         }
 
         .modal.active {
-            right: 0;
+            display: flex;
         }
 
         .modal-content {
@@ -80,6 +83,21 @@
 
         .close-button:hover {
             transform: rotate(90deg);
+        }
+
+        .prompt-button {
+            background: #6c5ce7;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .prompt-button:hover {
+            background: #a8a4e6;
         }
         .nav-item {
             position: relative;
@@ -135,21 +153,18 @@
                 opacity: 0;
             }
         }
-
-        /* Transparent scrollbar for webkit-based browsers */
-        body::-webkit-scrollbar {
-            width: 8px;
-            background-color: transparent;
+        
+        .personal-info-fields {
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .personal-info-fields.hidden {
+            height: 0;
+            opacity: 0;
+            margin: 0;
+            padding: 0;
         }
 
-        body::-webkit-scrollbar-thumb {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-        }
-
-        body::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(255, 255, 255, 0.4);
-        }
 
     </style>
 </head>
@@ -166,8 +181,8 @@
                 <a href="#" class="nav-item" onclick="activateNavItem(this, event)">About</a>
                 <a href="./course.html" class="nav-item" onclick="activateNavItem(this, event)">Courses</a>
                 <a href="./dashboard.html" class="nav-item" onclick="activateNavItem(this, event)">Dashboard</a>
-                <a href="#" class="nav-item" onclick="activateNavItem(this, event)">Contact</a>
                 <a href="./chatbot/index.html" class="nav-item" onclick="activateNavItem(this, event)">ChatBot</a>
+                <a href="#" class="nav-item" onclick="activateNavItem(this, event)">Contact</a>
             </div>
             <button class="bg-purple-500 text-white px-6 py-2 rounded-md hover:bg-purple-400 transition duration-300">
                 Login/Register
@@ -178,83 +193,119 @@
     <!-- Main Content Area -->
     <main class="main-content pt-20 pl-4 pr-4 pb-4 w-full">
         <!-- Hero Section -->
-        <div class="text-white text-center py-16">
+        <!-- <div class="text-white text-center py-16">
             <h1 class="text-5xl font-bold mb-6">Our Courses</h1>
             <p class="text-xl mb-8">Explore our comprehensive selection of courses designed to help you master your studies.</p>
         </div>
 
-        <!-- Courses Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
-            <!-- Course Card 1 -->
+
+        <-- New Section -->
+        <div class="text-white text-center py-16">
+            <h1 class="text-5xl font-bold mb-6">Study Resources</h1>
+            <p class="text-xl mb-8">Explore our comprehensive collection of study materials to boost your preparation.</p>
+        </div>
+
+        <!-- Resources Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4 pb-16">
+            <!-- Resource Card 1 -->
             <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
                 <div class="flex items-center gap-4 mb-4">
                     <div class="bg-purple-500 text-white p-3 rounded-lg">
-                        <i class="fas fa-graduation-cap text-2xl"></i>
+                        <i class="fas fa-clipboard-check text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-white">IIT JEE</h3>
+                    <h3 class="text-xl font-bold text-white">Test Practices</h3>
                 </div>
-                <p class="text-gray-200">Master the fundamentals of physics with our comprehensive course.</p>
-                <button onclick="openEnrollmentModal('physics')" class="enroll-button w-full mt-4">Enroll Now</button>
+                <p class="text-gray-200">Practice with our extensive collection of test questions and mock exams.</p>
+                <button onclick="openEnrollmentModal('test-practices', false)" class="enroll-button w-full mt-4">Explore Now</button>
             </div>
 
-            <!-- Course Card 2 -->
+            <!-- Resource Card 2 -->
             <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
                 <div class="flex items-center gap-4 mb-4">
                     <div class="bg-purple-500 text-white p-3 rounded-lg">
-                        <i class="fas fa-calculator text-2xl"></i>
+                        <i class="fas fa-play-circle text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-white">NEET</h3>
+                    <h3 class="text-xl font-bold text-white">Playlists</h3>
                 </div>
-                <p class="text-gray-200">Enhance your mathematical skills with our detailed course curriculum.</p>
-                <button onclick="openEnrollmentModal('math')" class="enroll-button w-full mt-4">Enroll Now</button>
+                <p class="text-gray-200">Access curated video playlists covering all important topics and concepts.</p>
+                <button onclick="showPlaylistModal()" class="enroll-button w-full mt-4">Explore Now</button>
             </div>
 
-            <!-- Course Card 3 -->
+            <!-- Resource Card 3 -->
             <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
                 <div class="flex items-center gap-4 mb-4">
                     <div class="bg-purple-500 text-white p-3 rounded-lg">
-                        <i class="fas fa-beaker text-2xl"></i>
+                        <i class="fas fa-file-alt text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-white">GOVT JOBS</h3>
+                    <h3 class="text-xl font-bold text-white">Test Papers</h3>
                 </div>
-                <p class="text-gray-200">Learn the basics of chemistry with our interactive lessons.</p>
-                <button onclick="openEnrollmentModal('chemistry')" class="enroll-button w-full mt-4">Enroll Now</button>
+                <p class="text-gray-200">Download previous years' test papers with detailed solutions.</p>
+                <button onclick="openEnrollmentModal('test-papers', false)" class="enroll-button w-full mt-4">Explore Now</button>
+            </div>
+
+            <!-- Resource Card 4 -->
+            <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-purple-500 text-white p-3 rounded-lg">
+                        <i class="fas fa-book text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Books</h3>
+                </div>
+                <p class="text-gray-200">Find recommended preparation books and study materials.</p>
+                <button onclick="openEnrollmentModal('books', false)" class="enroll-button w-full mt-4">Explore Now</button>
+            </div>
+        </div>
+
+        <!-- Playlist Choice Modal -->
+        <div id="playlistModal" class="modal">
+            <div class="modal-content">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">Select a Playlist</h3>
+                <select id="playlistSelect" class="w-full px-4 py-2 rounded-lg border border-gray-800 focus:outline-none focus:border-purple-500 mb-4">
+                    <option value="iit">IIT Playlist</option>
+                    <option value="neet">NEET Playlist</option>
+                </select>
+                <button class="prompt-button" onclick="redirectToSelectedPlaylist()">Go</button>
+                <button class="prompt-button" onclick="closePlaylistModal()">Cancel</button>
             </div>
         </div>
 
         <!-- Registration Modal -->
-        <div class="modal">
+        <div id="enrollmentModal" class="modal">
             <div class="modal-content">
                 <span class="close-button" onclick="closeEnrollmentModal()">&times;</span>
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Course Enrollment</h2>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6" id="modalTitle">Course Enrollment</h2>
                 <form id="enrollmentForm">
-                    <div class="mb-4">
-                        <label class="block text-gray-700 mb-2" for="name">Name</label>
-                        <input type="text" id="name" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+                    <div class="personal-info-fields" id="personalInfoFields">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2" for="name">Name</label>
+                            <input type="text" id="name" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2" for="email">Email</label>
+                            <input type="email" id="email" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 mb-2" for="phone">Phone</label>
+                            <input type="tel" id="phone" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
+                        </div>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-gray-700 mb-2" for="email">Email</label>
-                        <input type="email" id="email" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 mb-2" for="phone">Phone</label>
-                        <input type="tel" id="phone" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700 mb-2" for="course">Selected Course</label>
+                        <label class="block text-gray-700 mb-2" for="course">Selected Course/Resource</label>
                         <select id="course" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-purple-500">
-                            <option value="physics">IIT JEET</option>
-                            <option value="math">NEET</option>
-                            <option value="chemistry">GOVT JOBS</option>
+                            <option value="iit-jee">IIT JEE</option>
+                            <option value="neet">NEET</option>
+                            <!-- <option value="govt-jobs">GOVT JOBS</option> -->
+                            <!-- <option value="test-practices">Test Practices</option>
+                            <option value="playlists">Playlists</option>
+                            <option value="test-papers">Test Papers</option>
+                            <option value="books">Books</option> -->
                         </select>
                     </div>
-                    <button type="submit" class="enroll-button w-full">Complete Enrollment</button>
+                    <button type="submit" class="enroll-button w-full" id="submitButton">Complete Enrollment</button>
                 </form>
             </div>
         </div>
     </main>
-
-  
 
     <!-- Chat Container (Same as gdc.html) -->
     <div id="chatContainer" class="hidden bg-gray-800 w-64 h-96 rounded-2xl shadow-xl backdrop-blur-sm mt-4 transition-all duration-300 overflow-hidden">
@@ -275,63 +326,6 @@
             </div>
         </div>
     </div>
-    <!-- New Section -->
-<div class="text-white text-center py-16">
-    <h1 class="text-5xl font-bold mb-6">Study Resources</h1>
-    <p class="text-xl mb-8">Explore our comprehensive collection of study materials to boost your preparation.</p>
-</div>
-
-<!-- Resources Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4 pb-16">
-    <!-- Resource Card 1 -->
-    <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
-        <div class="flex items-center gap-4 mb-4">
-            <div class="bg-purple-500 text-white p-3 rounded-lg">
-                <i class="fas fa-clipboard-check text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white">Test Practices</h3>
-        </div>
-        <p class="text-gray-200">Practice with our extensive collection of test questions and mock exams.</p>
-        <button onclick="openEnrollmentModal('test-practices')" class="enroll-button w-full mt-4">Explore Now</button>
-    </div>
-
-    <!-- Resource Card 2 -->
-    <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
-        <div class="flex items-center gap-4 mb-4">
-            <div class="bg-purple-500 text-white p-3 rounded-lg">
-                <i class="fas fa-play-circle text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white">Playlists</h3>
-        </div>
-        <p class="text-gray-200">Access curated video playlists covering all important topics and concepts.</p>
-        <button onclick="openEnrollmentModal('playlists')" class="enroll-button w-full mt-4">Explore Now</button>
-    </div>
-
-    <!-- Resource Card 3 -->
-    <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
-        <div class="flex items-center gap-4 mb-4">
-            <div class="bg-purple-500 text-white p-3 rounded-lg">
-                <i class="fas fa-file-alt text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white">Test Papers</h3>
-        </div>
-        <p class="text-gray-200">Download previous years' test papers with detailed solutions.</p>
-        <button onclick="openEnrollmentModal('test-papers')" class="enroll-button w-full mt-4">Explore Now</button>
-    </div>
-
-    <!-- Resource Card 4 -->
-    <div class="course-card bg-gray-800 p-6 rounded-lg backdrop-blur-sm hover:bg-gray-700 transition duration-300">
-        <div class="flex items-center gap-4 mb-4">
-            <div class="bg-purple-500 text-white p-3 rounded-lg">
-                <i class="fas fa-book text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-bold text-white">Books</h3>
-        </div>
-        <p class="text-gray-200">Find recommended preparation books and study materials.</p>
-        <button onclick="openEnrollmentModal('books')" class="enroll-button w-full mt-4">Explore Now</button>
-    </div>
-</div>
-
 
     <script>
         // Three.js setup
@@ -425,30 +419,89 @@
             chatIcon.classList.toggle('animate-float');
         });
 
+
+        // Show Playlist Modal
+        function showPlaylistModal() {
+            document.getElementById('playlistModal').classList.add('active');
+        }
+
+        // Close Playlist Modal
+        function closePlaylistModal() {
+            document.getElementById('playlistModal').classList.remove('active');
+        }
+
+        // Redirect to Selected Playlist
+        function redirectToSelectedPlaylist() {
+            const selectedPlaylist = document.getElementById('playlistSelect').value;
+            if (selectedPlaylist === 'iit') {
+                window.location.href = './youtube-iit-playlist/index.html';
+            } else if (selectedPlaylist === 'neet') {
+                window.location.href = './youtube-neet-playlist/index.html';
+            }
+            closePlaylistModal();
+        }
+
         // Course Enrollment Modal
-        function openEnrollmentModal(course) {
-            document.querySelector('.modal').classList.add('active');
+        function openEnrollmentModal(course, showPersonalInfo) {
+            document.getElementById('enrollmentModal').classList.add('active');
             document.getElementById('course').value = course;
+            
+            const personalInfoFields = document.getElementById('personalInfoFields');
+            const modalTitle = document.getElementById('modalTitle');
+            const submitButton = document.getElementById('submitButton');
+            
+            if (showPersonalInfo) {
+                personalInfoFields.classList.remove('hidden');
+                modalTitle.textContent = 'Course Enrollment';
+                submitButton.textContent = 'Complete Enrollment';
+            } else {
+                personalInfoFields.classList.add('hidden');
+                modalTitle.textContent = 'Access Resource';
+                submitButton.textContent = 'Get Access';
+            }
         }
 
         function closeEnrollmentModal() {
-            document.querySelector('.modal').classList.remove('active');
+            document.getElementById('enrollmentModal').classList.remove('active');
         }
 
         // Close modal when clicking outside
-        document.querySelector('.modal').addEventListener('click', (e) => {
+        document.getElementById('enrollmentModal').addEventListener('click', (e) => {
             if (e.target === e.currentTarget) {
                 closeEnrollmentModal();
+            }
+        });
+        
+        // Close playlist modal when clicking outside
+        document.getElementById('playlistModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closePlaylistModal();
             }
         });
 
         // Form submission
         document.getElementById('enrollmentForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            // Add your enrollment logic here
-            alert('Thank you for enrolling! We will contact you shortly.');
+            
+            const course = document.getElementById('course').value;
+            const personalInfoFields = document.getElementById('personalInfoFields');
+            
+            let message = '';
+            
+            if (personalInfoFields.classList.contains('hidden')) {
+                // For resources (no personal info needed)
+                message = `You now have access to ${document.getElementById('course').options[document.getElementById('course').selectedIndex].text}!`;
+            } else {
+                // For courses (with personal info)
+                const name = document.getElementById('name').value;
+                const courseName = document.getElementById('course').options[document.getElementById('course').selectedIndex].text;
+                message = `Thank you for enrolling in ${courseName}, ${name}! We will contact you shortly.`;
+            }
+            
+            alert(message);
             closeEnrollmentModal();
         });
+
     </script>
 </body>
 </html>

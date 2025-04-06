@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEET Playlists</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #000;
+            overflow-y: scroll;
+            position: relative;
+        }
+
+        .video-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .video-item:hover {
+            transform: scale(1.05);
+        }
+
+        .video-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .video-title {
+            margin-top: 0.5rem;
+            font-size: 1rem;
+            color: #fff;
+            text-align: center;
+        }
+
+        .video-thumbnail {
+            display: block;
+            margin: 0 auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-item {
+            position: relative;
+            display: inline-block;
+            color: #fff;
+            padding: 0.6em 1em;
+            margin: 0 0.5em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            text-shadow: 0 1px 1px hsl(205deg 30% 10% / 0.2);
+            overflow: hidden;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            color: black;
+            text-shadow: none;
+        }
+
+        .nav-item::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 8px;
+            background: white;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-item.active::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Ensure the navigation bar is in front of the background */
+        nav {
+            z-index: 10;
+            position: relative;
+            background-color: transparent; /* Fully transparent background */
+        }
+
+        #three-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Skeleton Screen Styles */
+        .skeleton-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #000;
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .skeleton {
+            background-color: rgba(255, 250, 250, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .skeleton::before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 0;
+            left: -150%;
+            height: 100%;
+            width: 150%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        .skeleton-header {
+            height: 50px;
+            width: 30%;
+        }
+
+        .skeleton-nav {
+            height: 40px;
+            width: 100%;
+        }
+
+        .skeleton-hero {
+            height: 300px;
+            width: 100%;
+        }
+
+        .skeleton-dropdown {
+            height: 50px;
+            width: 100%;
+        }
+
+        .skeleton-content {
+            height: 200px;
+            width: 100%;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Slide-In Animation for Main Content */
+        .main-content {
+            opacity: 0;
+            transform: translateY(45px);
+            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+        }
+
+        .main-content.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 font-sans leading-normal tracking-normal min-h-screen relative">
+    <!-- Top Navigation Bar -->
+    <nav class="p-4 w-full"> 
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-white">GDG</h1>
+            <div class="hidden md:flex space-x-6">
+                <a href="../index.html" class="nav-item" onclick="activateNavItem(this, event)">Home</a>
+                <a href="#" class="nav-item" onclick="activateNavItem(this, event)">About</a>
+                <a href="../course.html" class="nav-item" onclick="activateNavItem(this, event)">Courses</a>
+                <a href="../dashboard.html" class="nav-item" onclick="activateNavItem(this, event)">Dashboard</a>
+                <a href="../chatbot/index.html" class="nav-item" onclick="activateNavItem(this, event)">ChatBot</a>
+                <a href="#" class="nav-item" onclick="activateNavItem(this, event)">Contact</a>
+            </div>
+            <button id="loginBtn" class="bg-purple-500 text-white px-6 py-2 rounded-md hover:bg-purple-400 transition duration-300">
+                Login/Register
+            </button>
+        </div>
+    </nav>
+
+    <!-- Three.js Canvas -->
+    <div id="three-background"></div>
+    
+    <!-- Skeleton Screen -->
+    <div id="skeletonScreen" class="skeleton-container">
+        <div class="skeleton skeleton-header"></div>
+        <div class="skeleton skeleton-nav"></div>
+        <div class="skeleton skeleton-hero"></div>
+        <div class="skeleton-dropdown"></div>
+        <div class="skeleton skeleton-content"></div>
+    </div>
+
+    <div class="container mx-auto mt-10 p-6 rounded-lg shadow-xl relative z-10 main-content">
+        <h1 class="text-4xl font-bold mb-10 text-center text-purple-500">Explore NEET Playlists</h1>
+        <div id="playlist-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-white">
+            <!-- More video items can be added here -->
+        </div>
+    </div>
+    <script src="app.js"></script>
+    <script>
+        // Three.js setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0.9);
+        document.getElementById('three-background').appendChild(renderer.domElement);
+
+        // Create confetti particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 1000; // Number of confetti particles
+        const posArray = new Float32Array(particlesCount * 3);
+        const colors = new Float32Array(particlesCount * 3);
+
+        for(let i = 0; i < particlesCount; i++) {
+            posArray[i * 3] = (Math.random() - 0.5) * 20;
+            posArray[i * 3 + 1] = (Math.random() - 0.5) * 20;
+            posArray[i * 3 + 2] = (Math.random() - 0.5) * 20;
+
+            colors[i * 3] = Math.random();
+            colors[i * 3 + 1] = Math.random();
+            colors[i * 3 + 2] = Math.random();
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        // Create material for confetti
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.1,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.5 // Adjusted opacity for less transparency
+        });
+
+        // Create mesh
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        
+        camera.position.z = 10;
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotate particles
+            particlesMesh.rotation.x += 0.001;
+            particlesMesh.rotation.y += 0.001;
+            
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Simulate loading completion
+        window.addEventListener('load', () => {
+            const skeletonScreen = document.getElementById('skeletonScreen');
+            const mainContent = document.querySelector('.main-content');
+            setTimeout(() => {
+                skeletonScreen.style.display = 'none';
+                mainContent.classList.add('visible'); // Add class to trigger slide-in
+            }, 3000); // Simulate a 3-second loading time
+        });
+    </script>
+</body>
+</html>

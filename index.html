@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physics Wallah</title>
+    <title>GDG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="./New/output.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -361,10 +360,19 @@
         </div>
 
         <!-- Chat Container (Hidden by default) -->
-        <div id="chatContainer" class="hidden bg-gray-800 w-64 h-96 rounded-2xl shadow-xl backdrop-blur-sm mt-4 transition-all duration-300 overflow-hidden">
+        <div id="chatContainer" class="hidden bg-gray-800 w-80 h-96 rounded-2xl shadow-xl backdrop-blur-sm mt-4 transition-all duration-300 overflow-hidden">
             <div class="p-4 h-full flex flex-col">
-                <div id="chatMessages" class="bg-purple-800/30 rounded-lg p-3 mb-4 flex-1 overflow-y-auto">
-                    <!-- Chat messages will be appended here -->
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-white font-bold">Gemini AI Assistant</h3>
+                    <button id="closeChatBtn" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="chatMessages" class="bg-purple-900/20 rounded-lg p-3 mb-4 flex-1 overflow-y-auto">
+                    <!-- Initial greeting message -->
+                    <div class="message mb-2 p-2 rounded bg-gray-800/70 mr-4">
+                        <strong class="text-purple-300">Bot:</strong> <span class="text-gray-200">Hello! I'm your AI assistant powered by Gemini. How can I help you today?</span>
+                    </div>
                 </div>
                 <div class="flex gap-2">
                     <input id="chatInput" type="text" placeholder="Ask a question..." 
@@ -479,13 +487,19 @@
         // Toggle chat functionality
         const chatIcon = document.getElementById('chatIcon');
         const chatContainer = document.getElementById('chatContainer');
+        const closeChatBtn = document.getElementById('closeChatBtn');
         
         chatIcon.addEventListener('click', () => {
             chatContainer.classList.toggle('hidden');
             chatIcon.classList.toggle('animate-float');
         });
+        
+        closeChatBtn.addEventListener('click', () => {
+            chatContainer.classList.add('hidden');
+            chatIcon.classList.add('animate-float');
+        });
 
-        // Chat bot functionality
+        // Chat bot functionality using Gemini API
         const chatInput = document.getElementById('chatInput');
         const sendChatBtn = document.getElementById('sendChatBtn');
         const chatMessages = document.getElementById('chatMessages');
@@ -501,49 +515,151 @@
 
             // Display user message
             displayMessage('You', message);
+            
+            // Add loading indicator
+            const loadingId = showLoading();
 
-            // Send message to server
-            fetch('http://localhost:5000/api/chat', {
+            // Send message to updated Gemini API
+            // Using the Gemini API for Google's generative AI
+            const API_KEY = 'AIzaSyBdtXSkUEemDK_U4wCVhIYRB-Ou-76qoRc'; // Replace with your actual API key
+            const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+            
+            fetch(`${API_URL}?key=${API_KEY}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message })
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: message
+                        }]
+                    }]
+                })
             })
-            .then(response => response.json())
-            .then(data => {
-                const botMessage = data.text;
-                displayMessage('Bot', botMessage);
-
-                if (data.videos) {
-                    data.videos.forEach(video => {
-                        displayVideo(video);
-                    });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
                 }
+                return response.json();
             })
-            .catch(error => console.error('Error:', error));
+            .then(data => {
+                console.log('API Response:', data); // Debugging: Log the API response
+                
+                // Remove loading indicator
+                hideLoading(loadingId);
+                
+                // Extract the response text from the Gemini API response
+                let botMessage = 'Sorry, I did not understand that.';
+                
+                // Simplified response handling for the updated API
+                try {
+                    if (data.candidates && data.candidates[0] && data.candidates[0].content && 
+                        data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+                        botMessage = data.candidates[0].content.parts[0].text;
+                    } else if (data.promptFeedback && data.promptFeedback.blockReason) {
+                        botMessage = `Your request was blocked due to ${data.promptFeedback.blockReason.toLowerCase()} concerns.`;
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing response:', parseError);
+                    botMessage = 'Sorry, I had trouble understanding the response.';
+                }
+                
+                displayMessage('Bot', botMessage);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Remove loading indicator
+                hideLoading(loadingId);
+                
+                // Simplified error message
+                displayMessage('Bot', `Sorry, there was an error processing your request: ${error.message}`);
+            });
 
             chatInput.value = '';
         }
 
         function displayMessage(sender, message) {
             const msg = document.createElement('div');
-            msg.className = 'message';
-            msg.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            msg.className = 'message mb-2 p-2 rounded';
+            
+            // Style based on sender
+            if (sender === 'You') {
+                msg.classList.add('bg-purple-900/30', 'ml-4');
+            } else {
+                msg.classList.add('bg-gray-800/70', 'mr-4');
+            }
+            
+            // Safely escape HTML to prevent XSS attacks
+            const escapedMessage = escapeHTML(message);
+            
+            // Format code blocks if they exist (basic markdown-like formatting)
+            const formattedMessage = formatCodeBlocks(escapedMessage);
+            
+            msg.innerHTML = `<strong class="text-purple-300">${sender}:</strong> <span class="text-gray-200">${formattedMessage}</span>`;
             chatMessages.appendChild(msg);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-
-        function displayVideo(video) {
-            const videoElement = document.createElement('div');
-            videoElement.className = 'video';
-            videoElement.innerHTML = `
-                <img src="${video.thumbnail}" alt="Thumbnail" />
-                <strong>${video.title}</strong> by ${video.channelTitle}
-                <p>${video.description}</p>
-            `;
-            chatMessages.appendChild(videoElement);
+        
+        // Helper function to escape HTML
+        function escapeHTML(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Basic formatting for code blocks
+        function formatCodeBlocks(text) {
+            // Replace ```code``` blocks with styled <pre><code> elements
+            return text.replace(/```([\s\S]*?)```/g, 
+                '<pre class="bg-gray-900 p-2 rounded my-2 overflow-x-auto"><code>$1</code></pre>');
+        }
+        
+        // Loading indicator functions
+        function showLoading() {
+            const loadingId = 'loading-' + Date.now();
+            const loadingElement = document.createElement('div');
+            loadingElement.id = loadingId;
+            loadingElement.className = 'message mb-2 p-2 rounded bg-gray-800/70 mr-4';
+            loadingElement.innerHTML = '<div class="flex items-center"><strong class="text-purple-300">Bot:</strong> <div class="ml-2 flex space-x-1"><div class="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div><div class="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div><div class="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div></div></div>';
+            chatMessages.appendChild(loadingElement);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            return loadingId;
+        }
+        
+        function hideLoading(loadingId) {
+            const loadingElement = document.getElementById(loadingId);
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+        }
+        
+        // Add a retry mechanism for API calls
+        function retryFetch(url, options, maxRetries = 3, delay = 1000) {
+            return new Promise((resolve, reject) => {
+                const attempt = (retryCount) => {
+                    fetch(url, options)
+                        .then(response => {
+                            if (response.ok) {
+                                resolve(response);
+                            } else if (retryCount < maxRetries) {
+                                console.log(`Attempt ${retryCount + 1} failed, retrying in ${delay}ms...`);
+                                setTimeout(() => attempt(retryCount + 1), delay);
+                            } else {
+                                reject(new Error(`Failed after ${maxRetries} attempts: ${response.status} ${response.statusText}`));
+                            }
+                        })
+                        .catch(error => {
+                            if (retryCount < maxRetries) {
+                                console.log(`Attempt ${retryCount + 1} failed with error: ${error.message}, retrying in ${delay}ms...`);
+                                setTimeout(() => attempt(retryCount + 1), delay);
+                            } else {
+                                reject(new Error(`Failed after ${maxRetries} attempts: ${error.message}`));
+                            }
+                        });
+                };
+                attempt(0);
+            });
         }
 
         // Login form functionality
@@ -578,7 +694,16 @@
                 mainContent.classList.add('visible'); // Add class to trigger slide-in
             }, 3000); // Simulate a 3-second loading time
         });
+
+        // Java-related functionality
+        function executeJavaCode() {
+            // Example JavaScript function to simulate Java code execution
+            console.log("Executing Java code...");
+            // Add your Java-related functionality here
+        }
+
+        // Call the Java-related function
+        executeJavaCode();
     </script>
 </body>
 </html>
-
