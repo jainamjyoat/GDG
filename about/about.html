@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edubot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #000;
+            overflow-y: scroll;
+            position: relative;
+        }
+        
+        #three-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Transparent scrollbar for webkit-based browsers */
+        body::-webkit-scrollbar {
+            width: 8px;
+            background-color: transparent;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        body::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .nav-item {
+            position: relative;
+            display: inline-block;
+            color: #fff;
+            padding: 0.6em 1em;
+            margin: 0 0.5em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            text-shadow: 0 1px 1px hsl(205deg 30% 10% / 0.2);
+            overflow: hidden;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            color: black;
+            text-shadow: none;
+        }
+
+        .nav-item::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 8px;
+            background: white;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-item.active::after {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Skeleton Screen Styles */
+        .skeleton-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #000;
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .skeleton {
+            background-color: rgba(255, 250, 250, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .skeleton::before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 0;
+            left: -150%;
+            height: 100%;
+            width: 150%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        .skeleton-header {
+            height: 50px;
+            width: 30%;
+        }
+
+        .skeleton-nav {
+            height: 40px;
+            width: 100%;
+        }
+
+        .skeleton-hero {
+            height: 300px;
+            width: 100%;
+        }
+
+        .skeleton-content {
+            height: 200px;
+            width: 100%;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Slide-In Animation for Main Content */
+        .main-content {
+            opacity: 0;
+            transform: translateY(45px);
+            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+        }
+
+        .main-content.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Ensure no overflow in navigation bar */
+        nav {
+            overflow: hidden;
+        }
+
+        /* Team Member Cards */
+        .team-card {
+            background-color: rgba(26, 26, 26, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(147, 51, 234, 0.3);
+        }
+
+        .team-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        /* Timeline */
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 30px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 5px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #9333ea;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 20px;
+            width: 1px;
+            height: calc(100% - 20px);
+            background: rgba(147, 51, 234, 0.5);
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+        /* Stats */
+        .stat-card {
+            background: rgba(147, 51, 234, 0.1);
+            border: 1px solid rgba(147, 51, 234, 0.3);
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Three.js Canvas -->
+    <div id="three-background"></div>
+    
+    <!-- Skeleton Screen -->
+    <div id="skeletonScreen" class="skeleton-container">
+        <div class="skeleton skeleton-header"></div>
+        <div class="skeleton skeleton-nav"></div>
+        <div class="skeleton skeleton-hero"></div>
+        <div class="skeleton skeleton-content"></div>
+    </div>
+
+    <!-- Top Navigation Bar -->
+    <nav class="p-4 fixed w-full z-50 bg-black bg-opacity-90"> 
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-white">Edubot</h1>
+            <div class="hidden md:flex space-x-6">
+                <a href="../index.html" class="nav-item" onclick="activateNavItem(this, event)">Home</a>
+                <a href="./about/about.html" class="nav-item active" onclick="activateNavItem(this, event)">About</a>
+                <a href="../course.html" class="nav-item" onclick="activateNavItem(this, event)">Courses</a>
+                <a href="../dashboard.html" class="nav-item" onclick="activateNavItem(this, event)">Dashboard</a>
+                <!-- <a href="#" class="nav-item" onclick="activateNavItem(this, event)">Contact</a> -->
+            </div>
+            <button id="loginBtn" class="bg-purple-500 text-white px-6 py-2 rounded-md hover:bg-purple-400 transition duration-300">
+                Login/Register
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content pt-20 pl-4 pr-4 pb-4 w-full container mx-auto">
+        <!-- Hero Section -->
+        <section class="text-white py-16 text-center">
+            <h1 class="text-5xl font-bold mb-6">About Edubot</h1>
+            <p class="text-xl mb-8 max-w-3xl mx-auto">Empowering students with quality education and innovative learning solutions</p>
+        </section>
+
+        <!-- Mission Section -->
+        <section class="my-16">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold text-white mb-6">Our Mission</h2>
+                    <p class="text-gray-300 mb-6">To make quality education accessible and affordable for every student, regardless of their geographical location or financial background.</p>
+                    <p class="text-gray-300">We believe in the power of education to transform lives and are committed to providing the best learning resources to help students achieve their academic goals.</p>
+                </div>
+                <div class="bg-gray-800 rounded-xl p-8 backdrop-blur-sm">
+                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Students learning" class="rounded-lg w-full h-auto">
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="my-16">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="stat-card p-6 rounded-lg text-center">
+                    <div class="text-4xl font-bold text-purple-400 mb-2">10M+</div>
+                    <div class="text-gray-300">Students</div>
+                </div>
+                <div class="stat-card p-6 rounded-lg text-center">
+                    <div class="text-4xl font-bold text-purple-400 mb-2">500+</div>
+                    <div class="text-gray-300">Educators</div>
+                </div>
+                <div class="stat-card p-6 rounded-lg text-center">
+                    <div class="text-4xl font-bold text-purple-400 mb-2">100+</div>
+                    <div class="text-gray-300">Courses</div>
+                </div>
+                <div class="stat-card p-6 rounded-lg text-center">
+                    <div class="text-4xl font-bold text-purple-400 mb-2">24/7</div>
+                    <div class="text-gray-300">Support</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Our Impact Section -->
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-white mb-12 text-center">Our Impact</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-800 p-6 rounded-lg backdrop-blur-sm">
+                    <div class="text-purple-400 text-3xl mb-4">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Global Reach</h3>
+                    <p class="text-gray-300">Our platform reaches students in over 100 countries, providing them with the tools they need to succeed.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg backdrop-blur-sm">
+                    <div class="text-purple-400 text-3xl mb-4">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Award-Winning</h3>
+                    <p class="text-gray-300">Recognized for excellence in education technology, we continue to innovate and lead the industry.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg backdrop-blur-sm">
+                    <div class="text-purple-400 text-3xl mb-4">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Community Support</h3>
+                    <p class="text-gray-300">We foster a supportive community where students and educators collaborate and grow together.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Team Section -->
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-white mb-12 text-center">Meet Our Team</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="team-card">
+                    <img src="/about/jainam.jpeg" alt="Team Member">
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-white mb-2">Jainam Jyoat</h3>
+                        <p class="text-purple-400 mb-4">Team Member</p>
+                        <!-- <p class="text-gray-300">Passionate educator with 15+ years of experience in teaching and curriculum development.</p> -->
+                    </div>
+                </div>
+                <div class="team-card">
+                    <img src="/about/yukta.jpeg" alt="Team Member">
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-white mb-2">Yukta Shree</h3>
+                        <p class="text-purple-400 mb-4">Team Member</p>
+                        <!-- <p class="text-gray-300">Expert in pedagogical approaches and learning methodologies for digital education.</p> -->
+                    </div>
+                </div>
+                <div class="team-card">
+                    <img src="/about/dhruv.jpeg" alt="Team Member">
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-white mb-2">Dhruv</h3>
+                        <p class="text-purple-400 mb-4">Team Member</p>
+                        <!-- <p class="text-gray-300">Technology enthusiast building scalable platforms to enhance learning experiences.</p> -->
+                    </div>
+                </div>
+                <div class="team-card">
+                    <img src="/about/srinivas.jpeg" alt="Team Member">
+                    <div class="p-4">
+                        <h3 class="text-xl font-bold text-white mb-2">K Srinivas</h3>
+                        <p class="text-purple-400 mb-4">Team Member</p>
+                        <!-- <p class="text-gray-300">Expert in pedagogical approaches and learning methodologies for digital education.</p> -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Values Section -->
+        <section class="my-16">
+            <h2 class="text-3xl font-bold text-white mb-12 text-center">Our Values</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-800 p-6 rounded-lg backdrop-blur-sm">
+                    <div class="text-purple-400 text-3xl mb-4">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Quality Education</h3>
+                    <p class="text-gray-300">We are committed to delivering the highest quality educational content curated by experts.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg backdrop-blur-sm">
+                    <div class="text-purple-400 text-3xl mb-4">
+                        <i class="fas fa-hand-holding-heart"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Accessibility</h3>
+                    <p class="text-gray-300">Breaking barriers to make premium education accessible to students from all backgrounds.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg backdrop-blur-sm">
+                    <div class="text-purple-400 text-3xl mb-4">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-4">Innovation</h3>
+                    <p class="text-gray-300">Continuously evolving our teaching methods and technology to enhance learning outcomes.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-black bg-opacity-90 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4"> Edubot</h3>
+                    <p class="text-gray-400">Empowering students with quality education and innovative learning solutions.</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="../index.html" class="text-gray-400 hover:text-white transition">Home</a></li>
+                        <li><a href="../about/about.html" class="text-gray-400 hover:text-white transition">About Us</a></li>
+                        <li><a href="../course.html" class="text-gray-400 hover:text-white transition">Courses</a></li>
+                        <!-- <li><a href="#" class="text-gray-400 hover:text-white transition">Contact</a></li> -->
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Courses</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">JEE Preparation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">NEET Preparation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Foundation Courses</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Skill Development</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Contact Us</h4>
+                    <ul class="space-y-2">
+                        <li class="text-gray-400"><i class="fas fa-envelope mr-2"></i> info@gdg.com</li>
+                        <li class="text-gray-400"><i class="fas fa-phone mr-2"></i> +1 234 567 890</li>
+                        <li class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i> Lovely Professional University</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 Edubot. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Three.js setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0.9);
+        document.getElementById('three-background').appendChild(renderer.domElement);
+
+        // Create confetti particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 1000; // Number of confetti particles
+        const posArray = new Float32Array(particlesCount * 3);
+        const colors = new Float32Array(particlesCount * 3);
+
+        for(let i = 0; i < particlesCount; i++) {
+            posArray[i * 3] = (Math.random() - 0.5) * 20;
+            posArray[i * 3 + 1] = (Math.random() - 0.5) * 20;
+            posArray[i * 3 + 2] = (Math.random() - 0.5) * 20;
+
+            colors[i * 3] = Math.random();
+            colors[i * 3 + 1] = Math.random();
+            colors[i * 3 + 2] = Math.random();
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        // Create material for confetti
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.1,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        // Create mesh
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        
+        camera.position.z = 10;
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Rotate particles
+            particlesMesh.rotation.x += 0.001;
+            particlesMesh.rotation.y += 0.001;
+            
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        function activateNavItem(element, event) {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+
+            // Create ripple effect
+            const ripple = document.createElement('span');
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = `${size}px`;
+            ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+            ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
+            ripple.className = 'ripple';
+            element.appendChild(ripple);
+
+            setTimeout(() => {
+                element.removeChild(ripple);
+            }, 600);
+        }
+
+        // Simulate loading completion
+        window.addEventListener('load', () => {
+            const skeletonScreen = document.getElementById('skeletonScreen');
+            const mainContent = document.querySelector('.main-content');
+            setTimeout(() => {
+                skeletonScreen.style.display = 'none';
+                mainContent.classList.add('visible'); // Add class to trigger slide-in
+            }, 1000); // Simulate a 1-second loading time
+        });
+
+        // Login form functionality
+        const loginBtn = document.getElementById('loginBtn');
+        const loginContainer = document.getElementById('loginContainer');
+        const closeLoginBtn = document.getElementById('closeLoginBtn');
+        
+        loginBtn.addEventListener('click', () => {
+            loginContainer.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when login form is open
+        });
+        
+        closeLoginBtn.addEventListener('click', () => {
+            loginContainer.classList.remove('active');
+            document.body.style.overflow = ''; // Re-enable scrolling
+        });
+        
+        // Close login form when clicking outside
+        loginContainer.addEventListener('click', (e) => {
+            if (e.target === loginContainer) {
+                loginContainer.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
+</body>
+</html>
